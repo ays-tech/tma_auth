@@ -23,6 +23,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   const initData = useTelegramInitData();
 
   useEffect(() => {
+    console.log('Received initData:', initData);
     if (initData && initData.hash) {
       axios
         .post('/api/validate-hash', { hash: initData.hash })
@@ -38,7 +39,11 @@ function MyApp({ Component, pageProps }: AppProps) {
   }, [initData]);
 
   if (!isHashValid) {
-    return null;
+    return <div>Error: Invalid hash.</div>;
+  }
+
+  if (!initData || !initData.hash) {
+    return <div>Error: Telegram initialization data is missing.</div>;
   }
 
   return (
