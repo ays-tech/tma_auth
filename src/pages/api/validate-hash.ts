@@ -1,6 +1,8 @@
 import crypto from 'crypto';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+const { webcrypto } = crypto;
+
 type Data = { ok: boolean } | { error: string };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
@@ -19,8 +21,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     }
 
     console.log('Received initData:', data);
-    
-    const isValid = isHashValid(data, hash, process.env.BOT_TOKEN);
+
+    const isValid = await isHashValid(data, hash, process.env.BOT_TOKEN);
 
     if (isValid) {
       return res.status(200).json({ ok: true });
@@ -33,8 +35,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }
 }
 
-function isHashValid(data: Record<string, string>, receivedHash: string, botToken: string) {
-  const secret = crypto.createHash('sha256').update(botToken).digest();
+async function isHashValid(data: Record<string, string>, receivedHash: string, botToken: string) {
+  const encoder = new TextEncoder();
 
   const checkString = Object.keys(data)
     .map((key) => `${key}=${data[key]}`)
@@ -43,13 +45,30 @@ function isHashValid(data: Record<string, string>, receivedHash: string, botToke
 
   console.log('CheckString:', checkString);
 
-  const hash = crypto
-    .createHmac('sha256', secret)
-    .update(checkString)
-    .digest('hex');
+  const secretKey = await webcrypto.subtle.importKey(
+    'raw',
+    encoder.encode('WebAppData'),
+    { name: 'HMAC', hash: 'SHA-256' },
+    true,
+    ['sign']
+  );
 
-  console.log('Generated Hash:', hash);
+  const secret = await webcrypto.subtle.sign('HMAC', secretKey, encoder.encode(botToken));
+
+  const signatureKey = await webcrypto.subtle.importKey(
+    'raw',
+    secret,
+    { name: 'HMAC', hash: 'SHA-256' },
+    true,
+    ['sign']
+  );
+
+  const signature = await webcrypto.subtle.sign('HMAC', signatureKey, encoder.encode(checkString));
+
+  const hex = Buffer.from(signature).toString('hex');
+
+  console.log('Generated Hash:', hex);
   console.log('Received Hash:', receivedHash);
 
-  return receivedHash === hash;
+  return receivedHash === hex;
 }
