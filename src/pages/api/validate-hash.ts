@@ -11,7 +11,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    if (!req.body.hash) {
+    const { hash, ...data } = req.body;
+    if (!hash) {
       return res.status(400).json({ error: 'Missing required field hash' });
     }
 
@@ -19,10 +20,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       return res.status(500).json({ error: 'Internal server error: Missing BOT_TOKEN' });
     }
 
-    const data = Object.fromEntries(new URLSearchParams(req.body.hash));
-    console.log('Data:', data);
-
-    const isValid = await isHashValid(data, process.env.BOT_TOKEN);
+    console.log('Received initData:', data);
+    
+    const isValid = await isHashValid(data, hash, process.env.BOT_TOKEN);
 
     if (isValid) {
       return res.status(200).json({ ok: true });
@@ -35,11 +35,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }
 }
 
-async function isHashValid(data: Record<string, string>, botToken: string) {
+async function isHashValid(data: Record<string, string>, receivedHash: string, botToken: string) {
   const encoder = new TextEncoder();
 
   const checkString = Object.keys(data)
-    .filter((key) => key !== 'hash')
     .map((key) => `${key}=${data[key]}`)
     .sort()
     .join('\n');
@@ -69,6 +68,7 @@ async function isHashValid(data: Record<string, string>, botToken: string) {
   const hex = Buffer.from(signature).toString('hex');
 
   console.log('Generated Hash:', hex);
+  console.log('Received Hash:', receivedHash);
 
-  return data.hash === hex;
+  return receivedHash === hex;
 }
