@@ -28,6 +28,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       console.log('Checking initData:', initData);
       if (initData.hash) {
         console.log('Received initData:', initData);
+        console.log('Client-side hash:', initData.hash);
         axios
           .post('/api/validate-hash', { ...initData }) // Post all initData
           .then((response) => {
