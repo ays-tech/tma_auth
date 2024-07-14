@@ -33,11 +33,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }
 }
 
-function isHashValid(data: Record<string, string>, receivedHash: string, botToken: string) {
+function isHashValid(data: Record<string, any>, receivedHash: string, botToken: string) {
   const secret = crypto.createHash('sha256').update(botToken).digest();
 
-  const checkString = Object.keys(data)
-    .map((key) => `${key}=${data[key]}`)
+  // Ensure all data values are strings
+  const stringData = Object.fromEntries(
+    Object.entries(data).map(([key, value]) => [key, String(value)])
+  );
+
+  const checkString = Object.keys(stringData)
+    .map((key) => `${key}=${stringData[key]}`)
     .sort()
     .join('\n');
 

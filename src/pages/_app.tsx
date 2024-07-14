@@ -29,7 +29,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       if (initData.hash) {
         console.log('Received initData:', initData);
         axios
-          .post('/api/validate-hash', { ...initData }) // Post all initData
+          .post('/api/validate-hash', initData) // Post all initData
           .then((response) => {
             console.log('Hash validation response:', response.data);
             setIsHashValid(response.status === 200);
