@@ -24,24 +24,26 @@ function MyApp({ Component, pageProps }: AppProps) {
   const initData = useTelegramInitData();
 
   useEffect(() => {
-    console.log('Checking initData:', initData);
-    if (initData && initData.hash) {
-      console.log('Received initData:', initData);
-      axios
-        .post('/api/validate-hash', { hash: initData.hash })
-        .then((response) => {
-          console.log('Hash validation response:', response.data);
-          setIsHashValid(response.status === 200);
-          setIsInitDataProcessed(true);
-        })
-        .catch((error) => {
-          console.error('Error validating hash:', error.response ? error.response.data : error.message);
-          setIsHashValid(false);
-          setIsInitDataProcessed(true);
-        });
-    } else {
-      console.error('initData or hash is missing');
-      setIsInitDataProcessed(true);
+    if (initData) {
+      console.log('Checking initData:', initData);
+      if (initData.hash) {
+        console.log('Received initData:', initData);
+        axios
+          .post('/api/validate-hash', { ...initData }) // Post all initData
+          .then((response) => {
+            console.log('Hash validation response:', response.data);
+            setIsHashValid(response.status === 200);
+            setIsInitDataProcessed(true);
+          })
+          .catch((error) => {
+            console.error('Error validating hash:', error.response ? error.response.data : error.message);
+            setIsHashValid(false);
+            setIsInitDataProcessed(true);
+          });
+      } else {
+        console.error('initData or hash is missing');
+        setIsInitDataProcessed(true);
+      }
     }
   }, [initData]);
 
