@@ -18,8 +18,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       return res.status(500).json({ error: 'Internal server error: Missing BOT_TOKEN' });
     }
 
-    console.log('Received initData for validation:', data);
-    
+    console.log('Received data for validation:', data);
+    console.log('Client-side hash:', hash);
+
     const isValid = isHashValid(data, hash, process.env.BOT_TOKEN);
 
     if (isValid) {
