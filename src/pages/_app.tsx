@@ -23,17 +23,25 @@ function MyApp({ Component, pageProps }: AppProps) {
   const initData = useTelegramInitData();
 
   useEffect(() => {
-    console.log('Received initData:', initData);
-    if (initData && initData.hash) {
-      axios
-        .post('/api/validate-hash', { hash: initData.hash })
-        .then((response) => setIsHashValid(response.status === 200))
-        .catch((error) => {
-          console.error('Error validating hash:', error);
-          setIsHashValid(false);
-        });
+    if (initData) {
+      console.log('Received initData:', initData);
+      if (initData.hash) {
+        axios
+          .post('/api/validate-hash', { hash: initData.hash })
+          .then((response) => {
+            console.log('Hash validation response:', response.data);
+            setIsHashValid(response.status === 200);
+          })
+          .catch((error) => {
+            console.error('Error validating hash:', error.response ? error.response.data : error.message);
+            setIsHashValid(false);
+          });
+      } else {
+        console.error('Hash is missing in initData');
+        setIsHashValid(false);
+      }
     } else {
-      console.error('initData or hash is missing');
+      console.error('initData is missing');
       setIsHashValid(false);
     }
   }, [initData]);
