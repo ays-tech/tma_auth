@@ -20,31 +20,34 @@ const robotoMono = Roboto_Mono({
 
 function MyApp({ Component, pageProps }: AppProps) {
   const [isHashValid, setIsHashValid] = useState(false);
+  const [isInitDataProcessed, setIsInitDataProcessed] = useState(false);
   const initData = useTelegramInitData();
 
   useEffect(() => {
-    if (initData) {
+    console.log('Checking initData:', initData);
+    if (initData && initData.hash) {
       console.log('Received initData:', initData);
-      if (initData.hash) {
-        axios
-          .post('/api/validate-hash', { hash: initData.hash })
-          .then((response) => {
-            console.log('Hash validation response:', response.data);
-            setIsHashValid(response.status === 200);
-          })
-          .catch((error) => {
-            console.error('Error validating hash:', error.response ? error.response.data : error.message);
-            setIsHashValid(false);
-          });
-      } else {
-        console.error('Hash is missing in initData');
-        setIsHashValid(false);
-      }
+      axios
+        .post('/api/validate-hash', { hash: initData.hash })
+        .then((response) => {
+          console.log('Hash validation response:', response.data);
+          setIsHashValid(response.status === 200);
+          setIsInitDataProcessed(true);
+        })
+        .catch((error) => {
+          console.error('Error validating hash:', error.response ? error.response.data : error.message);
+          setIsHashValid(false);
+          setIsInitDataProcessed(true);
+        });
     } else {
-      console.error('initData is missing');
-      setIsHashValid(false);
+      console.error('initData or hash is missing');
+      setIsInitDataProcessed(true);
     }
   }, [initData]);
+
+  if (!isInitDataProcessed) {
+    return <div>Loading...</div>;
+  }
 
   if (!isHashValid) {
     return <div>Error: Invalid hash.</div>;
