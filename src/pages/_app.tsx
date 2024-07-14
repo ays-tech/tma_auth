@@ -47,6 +47,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       }
     }
   }, [initData]);
+  
 
   if (!isInitDataProcessed) {
     return <div>Loading...</div>;
