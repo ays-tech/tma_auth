@@ -12,6 +12,7 @@ function useTelegramInitData() {
 
   useEffect(() => {
     if (window.Telegram && window.Telegram.WebApp) {
+      console.log('Telegram WebApp is initialized');
       const firstLayerInitData = Object.fromEntries(
         new URLSearchParams(window.Telegram.WebApp.initData)
       );
@@ -26,6 +27,7 @@ function useTelegramInitData() {
         }
       }
 
+      console.log('Parsed initData:', initData);
       setData(initData as TelegramWebApps.WebAppInitData);
     } else {
       console.error('Telegram WebApp is not initialized');

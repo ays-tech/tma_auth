@@ -18,7 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       return res.status(500).json({ error: 'Internal server error: Missing BOT_TOKEN' });
     }
 
-    console.log('Received initData:', data);
+    console.log('Received initData for validation:', data);
     
     const isValid = isHashValid(data, hash, process.env.BOT_TOKEN);
 
@@ -33,20 +33,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }
 }
 
-function isHashValid(data: Record<string, any>, receivedHash: string, botToken: string) {
+function isHashValid(data: Record<string, string>, receivedHash: string, botToken: string) {
   const secret = crypto.createHash('sha256').update(botToken).digest();
 
-  // Ensure all data values are strings
-  const stringData = Object.fromEntries(
-    Object.entries(data).map(([key, value]) => [key, String(value)])
-  );
-
-  const checkString = Object.keys(stringData)
-    .map((key) => `${key}=${stringData[key]}`)
+  const checkString = Object.keys(data)
+    .map((key) => `${key}=${data[key]}`)
     .sort()
     .join('\n');
 
-  console.log('CheckString:', checkString);
+  console.log('CheckString for hash generation:', checkString);
 
   const hash = crypto
     .createHmac('sha256', secret)
